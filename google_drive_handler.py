@@ -343,8 +343,9 @@ class GoogleDriveHandler:
             from PIL import Image
             import io
             import base64
-            import openai
+            from openai import OpenAI
             import pytesseract
+            import os
             
             # Load image
             image = Image.open(io.BytesIO(content))
@@ -376,8 +377,13 @@ class GoogleDriveHandler:
                 image.save(buffer, format='JPEG', quality=85)
                 base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
                 
-                # Call OpenAI Vision API (Updated to current model 2025)
-                response = openai.chat.completions.create(
+                # Initialize OpenAI client and call Vision API (Updated to current model 2025)
+                openai_api_key = os.getenv('OPENAI_API_KEY')
+                if not openai_api_key:
+                    raise ValueError("OPENAI_API_KEY not found in environment")
+                
+                client = OpenAI(api_key=openai_api_key)
+                response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {

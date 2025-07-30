@@ -1,7 +1,7 @@
 import logging
 import time
 from typing import List, Dict, Any, Optional
-import openai
+from openai import OpenAI
 from config import Config, CollectionConfig
 
 logger = logging.getLogger(__name__)
@@ -28,8 +28,8 @@ class EmbeddingGenerator:
             self.model = embedding_model or Config.EMBEDDING_MODEL
             self.collection_name = "default"
         
-        # Set the OpenAI API key
-        openai.api_key = self.openai_api_key
+        # Initialize OpenAI client
+        self.client = OpenAI(api_key=self.openai_api_key)
         self.max_retries = 3
         self.retry_delay = 1
     
@@ -48,7 +48,7 @@ class EmbeddingGenerator:
                     return [0.0] * 1536  # Return zero vector for empty text
                 
                 # Generate embedding using OpenAI API
-                response = openai.embeddings.create(
+                response = self.client.embeddings.create(
                     model=self.model,
                     input=text
                 )
