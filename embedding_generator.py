@@ -97,7 +97,7 @@ class EmbeddingGenerator:
                     
                     # Generate embeddings for valid texts
                     if valid_texts:
-                        response = openai.embeddings.create(
+                        response = self.client.embeddings.create(
                             model=self.model,
                             input=valid_texts
                         )
