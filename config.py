@@ -37,14 +37,31 @@ class MultiCollectionConfig:
         self._load_configuration()
     
     def _load_configuration(self):
-        """Load configuration from JSON or fall back to legacy environment variables."""
-        collections_json = os.getenv('COLLECTIONS_CONFIG')
+        """Load configuration from JSON file, environment variable, or fall back to legacy environment variables."""
+        collections_json = None
         
+        # Priority 1: Check for local collections-config.json file in credentials folder
+        local_config_path = os.path.join('credentials', 'collections-config.json')
+        if os.path.exists(local_config_path):
+            logger.info(f"Loading multi-collection configuration from local file: {local_config_path}")
+            try:
+                with open(local_config_path, 'r') as f:
+                    collections_json = f.read()
+            except Exception as e:
+                logger.error(f"Error reading local config file {local_config_path}: {str(e)}")
+                collections_json = None
+        
+        # Priority 2: Check for COLLECTIONS_CONFIG environment variable
+        if not collections_json:
+            collections_json = os.getenv('COLLECTIONS_CONFIG')
+            if collections_json:
+                logger.info("Loading multi-collection configuration from COLLECTIONS_CONFIG environment variable")
+        
+        # Load JSON config if found, otherwise fall back to legacy
         if collections_json:
-            logger.info("Loading multi-collection configuration from JSON")
             self._load_from_json(collections_json)
         else:
-            logger.info("Loading legacy single-collection configuration")
+            logger.info("Loading legacy single-collection configuration from environment variables")
             self._load_legacy_config()
     
     def _load_from_json(self, collections_json: str):

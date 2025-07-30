@@ -28,6 +28,8 @@ MANIFEST
 credentials/
 *.json
 !collections-config.example.json
+collections-config.json
+
 
 # Logs
 *.log

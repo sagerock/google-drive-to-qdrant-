@@ -60,7 +60,8 @@ AWSNA Qdrant AutoUploader/
 ├── .github/workflows/
 │   └── weekly-upload.yml      # GitHub Actions workflow
 ├── credentials/
-│   └── service-account.json   # Google Drive service account credentials
+│   ├── service-account.json   # Google Drive service account credentials
+│   └── collections-config.json # Your real multi-collection configuration (create from example)
 ├── config.py                  # Multi-collection configuration management
 ├── google_drive_handler.py    # Google Drive API integration
 ├── document_processor.py      # Document chunking and processing
@@ -110,7 +111,7 @@ You can use either **Multi-Collection** or **Legacy Single-Collection** configur
 
 #### Option A: Multi-Collection Configuration (Recommended)
 
-Create a JSON configuration with your collections:
+Create your real configuration file in the `credentials/` folder:
 
 ```json
 {
@@ -135,13 +136,20 @@ Create a JSON configuration with your collections:
 }
 ```
 
-**For local testing**: Set as environment variable
+**For local development**:
 ```bash
-export COLLECTIONS_CONFIG='{"collections":[...]}'
+# Copy the example and edit with your real values
+cp collections-config.example.json credentials/collections-config.json
+# Edit credentials/collections-config.json with your actual folder IDs and API keys
 python3 main.py
 ```
 
 **For GitHub Actions**: Add `COLLECTIONS_CONFIG` secret with your JSON configuration
+
+**Configuration Priority**:
+1. **Local file**: `credentials/collections-config.json` (recommended for development)
+2. **Environment variable**: `COLLECTIONS_CONFIG` (recommended for CI/CD)
+3. **Legacy .env**: Falls back to single-collection mode
 
 #### Image Analysis Configuration Options
 
