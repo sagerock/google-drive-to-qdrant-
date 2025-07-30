@@ -68,6 +68,7 @@ AWSNA Qdrant AutoUploader/
 ├── embedding_generator.py     # OpenAI embedding generation
 ├── qdrant_manager.py         # Qdrant database operations
 ├── main.py                   # Main orchestration script
+├── create_collection.py      # Qdrant collection creation utility
 ├── collections-config.example.json # Multi-collection configuration example
 ├── requirements.txt          # Python dependencies
 ├── .env.example              # Environment variables template
@@ -212,6 +213,40 @@ pip3 install -r requirements.txt
 
 # Run the uploader locally
 python3 main.py
+```
+
+#### 🎯 Single Collection Processing
+
+You can now run just one specific collection instead of processing all collections:
+
+```bash
+# Process all collections (default behavior)
+python3 main.py
+
+# Process only a specific collection by name
+python3 main.py sgws
+python3 main.py awsna-accreditation
+
+# Process only a specific collection by Qdrant collection name
+python3 main.py sgws_auto
+python3 main.py awsna_accreditation_auto
+```
+
+**When to use single collection processing:**
+- 🔍 **Testing**: Verify one collection works before running all
+- ⚡ **Speed**: Process urgent updates to specific collections  
+- 🐛 **Debugging**: Isolate issues to specific collections
+- 💰 **Cost Control**: Process only what's needed to save API costs
+- 🔄 **Incremental Updates**: Update collections on different schedules
+
+**Example Output:**
+```
+SINGLE COLLECTION UPLOAD SUMMARY
+Total collections processed: 1
+Successful collections: 1  
+Failed collections: 0
+Total execution time: 13.27 seconds
+✓ sgws: 4 docs, 177 chunks, 177 points
 ```
 
 #### Additional Requirements for Image Analysis
@@ -443,19 +478,43 @@ logging.basicConfig(level=logging.DEBUG)
 
 ## Manual Execution
 
-You can manually trigger the upload:
+### 🚀 **Local Processing Options**
 
-1. **Locally**: Run `python main.py`
-2. **GitHub Actions**: Use the "Run workflow" button in the Actions tab
+**All Collections:**
+```bash
+python3 main.py
+```
+
+**Single Collection:**
+```bash
+python3 main.py sgws                    # By collection name
+python3 main.py sgws_auto              # By Qdrant collection name
+python3 main.py awsna-accreditation    # Works with any configured collection
+```
+
+**Collection Creation:**
+```bash
+# Create a specific collection
+python3 create_collection.py sgws_auto
+
+# Interactive collection selection
+python3 create_collection.py
+```
+
+### 🌐 **GitHub Actions**
+
+Use the "Run workflow" button in the Actions tab to trigger the full weekly sync (processes all collections).
 
 ## Recent Enhancements (2025)
 
 ### 🚀 **Latest Updates**
+- ✅ **Single Collection Processing**: Run individual collections locally for testing and debugging
 - ✅ **Image Analysis**: Full OCR + GPT-4o vision integration 
 - ✅ **Web Files**: HTML, JSON, Markdown support with smart parsing
 - ✅ **Current AI Models**: Updated to GPT-4o (50% cheaper, faster)
 - ✅ **Multi-Collection**: Independent processing with isolated configurations
 - ✅ **Enhanced Parsing**: BeautifulSoup, JSON structure analysis, Markdown TOC
+- ✅ **Collection Management**: Automated collection creation with multi-config support
 
 ### 🎯 **Why Choose This Solution**
 - **Comprehensive**: Handles 10+ file types that cover 99% of business documents
