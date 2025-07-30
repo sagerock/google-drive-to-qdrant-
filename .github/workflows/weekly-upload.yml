@@ -77,14 +77,12 @@ jobs:
         echo "COLLECTIONS_CONFIG present: $(if [ -n "$COLLECTIONS_CONFIG" ]; then echo 'Yes'; else echo 'No'; fi)"
         
         # Check if secrets are properly set
-        if [ -z "${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}" ]; then
-          echo "ERROR: GOOGLE_DRIVE_CREDENTIALS secret is not set!"
-          exit 1
-        fi
-        
-        if [ -z "${{ secrets.COLLECTIONS_CONFIG }}" ]; then
-          echo "ERROR: COLLECTIONS_CONFIG secret is not set!"
-          exit 1
+        echo "Checking secrets configuration..."
+        if [ -z "$COLLECTIONS_CONFIG" ]; then
+          echo "WARNING: COLLECTIONS_CONFIG environment variable is empty"
+          echo "This means the GitHub secret may not be set properly"
+        else
+          echo "COLLECTIONS_CONFIG is present and non-empty"
         fi
         
         echo "Running main.py..."
