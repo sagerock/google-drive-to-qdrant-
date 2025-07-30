@@ -69,6 +69,7 @@ AWSNA Qdrant AutoUploader/
 ├── qdrant_manager.py         # Qdrant database operations
 ├── main.py                   # Main orchestration script
 ├── create_collection.py      # Qdrant collection creation utility
+├── inspect_collections.py    # Document inspection and visibility utility
 ├── collections-config.example.json # Multi-collection configuration example
 ├── requirements.txt          # Python dependencies
 ├── .env.example              # Environment variables template
@@ -433,19 +434,58 @@ The uploader maintains exact compatibility with your Flowise setup:
 ### Processing Settings
 - `EMBEDDING_MODEL`: OpenAI model for embeddings (default: text-embedding-ada-002)
 
-## Monitoring
+## Monitoring & Visibility
 
-### Logs
+### 🔍 **Document Inspection**
+
+See exactly what documents are indexed in your collections:
+
+```bash
+# Quick overview of all collections
+python3 inspect_collections.py
+```
+
+**Example Output:**
+```
+📁 Collection: sgws
+   Qdrant Collection: sgws_auto
+   Total Chunks: 178
+   📄 Unique Documents: 4
+   🧩 Average Chunks per Document: 44.5
+   
+   📄 Document List:
+      1. 2022-23-Parent-Guardian-Handbook-10-7-22.pdf (111 chunks)
+      2. sgws-website.html (62 chunks)
+      3. 2023-24-Key-Dates-Calendar.pdf (3 chunks)
+      4. 2023-24-Tuition-Table-11-17.jpeg (2 chunks)
+```
+
+**Detailed Inspection:**
+```bash
+# Get detailed file information
+python3 inspect_collections.py sgws --detailed
+```
+
+**Detailed Output includes:**
+- 📊 Chunk counts per document
+- 📁 File sizes in MB
+- 🏷️ MIME types (pdf, docx, html, jpeg, etc.)
+- 📅 Last modification dates
+- 🔗 Google Drive source links
+
+### 📋 **Log-Based Monitoring**
+
 - All operations are logged to `uploader.log`
 - GitHub Actions uploads logs as artifacts on failure
 - Logs include timing, statistics, and error details
 
-### Statistics Tracked
-- Number of documents processed
-- Total chunks created
-- Embedding generation time
+### 📊 **Statistics Tracked**
+- Number of documents processed per collection
+- Total chunks created and uploaded
+- Embedding generation time and costs
 - Upload success/failure rates
 - Collection before/after statistics
+- Document-level processing details
 
 ## Troubleshooting
 
@@ -499,6 +539,18 @@ python3 create_collection.py sgws_auto
 
 # Interactive collection selection
 python3 create_collection.py
+```
+
+**Document Inspection:**
+```bash
+# View all indexed documents across collections
+python3 inspect_collections.py
+
+# Inspect specific collection with detailed information
+python3 inspect_collections.py sgws --detailed
+
+# Quick summary of all collections
+python3 inspect_collections.py --detailed
 ```
 
 ### 🌐 **GitHub Actions**
