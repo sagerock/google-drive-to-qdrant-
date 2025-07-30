@@ -153,7 +153,7 @@ def process_collection(collection_config, drive_handler):
         logger.error("=" * 80)
         return {"success": False, "collection_name": collection_config.name, "error": str(e)}
 
-def main():
+def main(target_collection=None):
     """Main execution function for multi-collection processing."""
     start_time = time.time()
     logger = logging.getLogger(__name__)
@@ -162,6 +162,8 @@ def main():
         logger.info("=" * 60)
         logger.info("AWSNA Multi-Collection Qdrant AutoUploader Started")
         logger.info(f"Timestamp: {datetime.now().isoformat()}")
+        if target_collection:
+            logger.info(f"Target collection: {target_collection}")
         logger.info("=" * 60)
         
         # Load and validate multi-collection configuration
@@ -169,6 +171,22 @@ def main():
         multi_config = MultiCollectionConfig()
         multi_config.validate()
         logger.info(f"Configuration validated successfully for {len(multi_config.collections)} collection(s)")
+        
+        # Filter collections if target specified
+        collections_to_process = multi_config.collections
+        if target_collection:
+            collections_to_process = []
+            for config in multi_config.collections:
+                if (config.name == target_collection or 
+                    config.qdrant_collection == target_collection):
+                    collections_to_process.append(config)
+                    break
+            
+            if not collections_to_process:
+                available = [f"{config.name} ({config.qdrant_collection})" for config in multi_config.collections]
+                raise ValueError(f"Collection '{target_collection}' not found. Available: {available}")
+            
+            logger.info(f"Processing single collection: {collections_to_process[0].name}")
         
         # Initialize shared Google Drive handler
         logger.info("Initializing Google Drive handler...")
@@ -180,7 +198,7 @@ def main():
         successful_collections = 0
         failed_collections = 0
         
-        for collection_config in multi_config.collections:
+        for collection_config in collections_to_process:
             result = process_collection(collection_config, drive_handler)
             results.append(result)
             
@@ -193,8 +211,11 @@ def main():
         total_time = time.time() - start_time
         
         logger.info("=" * 60)
-        logger.info("MULTI-COLLECTION UPLOAD SUMMARY")
-        logger.info(f"Total collections processed: {len(multi_config.collections)}")
+        if target_collection:
+            logger.info("SINGLE COLLECTION UPLOAD SUMMARY")
+        else:
+            logger.info("MULTI-COLLECTION UPLOAD SUMMARY")
+        logger.info(f"Total collections processed: {len(collections_to_process)}")
         logger.info(f"Successful collections: {successful_collections}")
         logger.info(f"Failed collections: {failed_collections}")
         logger.info(f"Total execution time: {total_time:.2f} seconds")
@@ -225,8 +246,14 @@ def run_with_error_handling():
     setup_logging()
     logger = logging.getLogger(__name__)
     
+    # Check for command line argument
+    target_collection = None
+    if len(sys.argv) > 1:
+        target_collection = sys.argv[1]
+        logger.info(f"Command line argument: {target_collection}")
+    
     try:
-        main()
+        main(target_collection)
         sys.exit(0)
     except KeyboardInterrupt:
         logger.info("Upload cancelled by user")
