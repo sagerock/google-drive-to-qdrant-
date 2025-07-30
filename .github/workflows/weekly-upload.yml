@@ -48,17 +48,29 @@ jobs:
     - name: Set up environment variables
       run: |
         echo "GOOGLE_DRIVE_CREDENTIALS_PATH=./credentials/service-account.json" >> $GITHUB_ENV
+      env:
+        COLLECTIONS_CONFIG: ${{ secrets.COLLECTIONS_CONFIG }}
+        GOOGLE_DRIVE_FOLDER_IDS: ${{ secrets.GOOGLE_DRIVE_FOLDER_IDS }}
+        QDRANT_HOST: ${{ secrets.QDRANT_HOST }}
+        QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        QDRANT_COLLECTION_NAME: ${{ secrets.QDRANT_COLLECTION_NAME }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    
+    - name: Configure collection mode
+      run: |
         # Multi-collection configuration (JSON format) - takes precedence if set
-        if [ -n "${{ secrets.COLLECTIONS_CONFIG }}" ]; then
-          echo "COLLECTIONS_CONFIG=${{ secrets.COLLECTIONS_CONFIG }}" >> $GITHUB_ENV
+        if [ -n "$COLLECTIONS_CONFIG" ]; then
+          echo "COLLECTIONS_CONFIG<<EOF" >> $GITHUB_ENV
+          echo "$COLLECTIONS_CONFIG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           echo "Using multi-collection configuration"
         else
           # Legacy single-collection configuration for backward compatibility
-          echo "GOOGLE_DRIVE_FOLDER_IDS=${{ secrets.GOOGLE_DRIVE_FOLDER_IDS }}" >> $GITHUB_ENV
-          echo "QDRANT_HOST=${{ secrets.QDRANT_HOST }}" >> $GITHUB_ENV
-          echo "QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }}" >> $GITHUB_ENV
-          echo "QDRANT_COLLECTION_NAME=${{ secrets.QDRANT_COLLECTION_NAME }}" >> $GITHUB_ENV
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          echo "GOOGLE_DRIVE_FOLDER_IDS=$GOOGLE_DRIVE_FOLDER_IDS" >> $GITHUB_ENV
+          echo "QDRANT_HOST=$QDRANT_HOST" >> $GITHUB_ENV
+          echo "QDRANT_API_KEY=$QDRANT_API_KEY" >> $GITHUB_ENV
+          echo "QDRANT_COLLECTION_NAME=$QDRANT_COLLECTION_NAME" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
           echo "EMBEDDING_MODEL=text-embedding-ada-002" >> $GITHUB_ENV
           echo "CHUNK_SIZE=1000" >> $GITHUB_ENV
           echo "CHUNK_OVERLAP=200" >> $GITHUB_ENV
