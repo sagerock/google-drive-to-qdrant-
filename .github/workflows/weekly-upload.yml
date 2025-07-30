@@ -1,0 +1,82 @@
+name: Weekly Qdrant Upload
+
+on:
+  # Run every Sunday at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * 0'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tesseract-ocr
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create credentials file
+      run: |
+        echo '${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}' > ./credentials/service-account.json
+    
+    - name: Set up environment variables
+      run: |
+        echo "GOOGLE_DRIVE_CREDENTIALS_PATH=./credentials/service-account.json" >> $GITHUB_ENV
+        # Multi-collection configuration (JSON format) - takes precedence if set
+        if [ -n "${{ secrets.COLLECTIONS_CONFIG }}" ]; then
+          echo "COLLECTIONS_CONFIG=${{ secrets.COLLECTIONS_CONFIG }}" >> $GITHUB_ENV
+          echo "Using multi-collection configuration"
+        else
+          # Legacy single-collection configuration for backward compatibility
+          echo "GOOGLE_DRIVE_FOLDER_IDS=${{ secrets.GOOGLE_DRIVE_FOLDER_IDS }}" >> $GITHUB_ENV
+          echo "QDRANT_HOST=${{ secrets.QDRANT_HOST }}" >> $GITHUB_ENV
+          echo "QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }}" >> $GITHUB_ENV
+          echo "QDRANT_COLLECTION_NAME=${{ secrets.QDRANT_COLLECTION_NAME }}" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          echo "EMBEDDING_MODEL=text-embedding-ada-002" >> $GITHUB_ENV
+          echo "CHUNK_SIZE=1000" >> $GITHUB_ENV
+          echo "CHUNK_OVERLAP=200" >> $GITHUB_ENV
+          echo "INCLUDE_SUBFOLDERS=true" >> $GITHUB_ENV
+          echo "Using legacy single-collection configuration"
+        fi
+    
+    - name: Run uploader
+      run: python main.py
+    
+    - name: Upload logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: uploader-logs
+        path: uploader.log
+        retention-days: 30
+    
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Upload failed! Check the logs artifact for details."
+        echo "::error::Weekly Qdrant upload failed. Check logs for details."

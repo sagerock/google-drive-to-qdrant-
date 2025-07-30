@@ -1,0 +1,58 @@
+{
+  "collections": [
+    {
+      "name": "hr-docs",
+      "folders": ["your-google-drive-folder-id-here"],
+      "qdrant_host": "https://your-qdrant-instance.example.com",
+      "qdrant_api_key": "your-qdrant-api-key-here",
+      "qdrant_collection": "hr_documents",
+      "openai_api_key": "sk-your-openai-api-key-here",
+      "embedding_model": "text-embedding-3-small",
+      "chunk_size": 2000,
+      "chunk_overlap": 200,
+      "include_subfolders": true,
+      "enable_image_analysis": true,
+      "image_analysis_model": "gpt-4o",
+      "enable_ocr": true,
+      "ocr_language": "eng",
+      "image_description_prompt": "Describe this image in detail, including any text, charts, diagrams, or important visual elements."
+    },
+    {
+      "name": "tech-docs",
+      "folders": [
+        "your-google-drive-folder-id-1",
+        "your-google-drive-folder-id-2"
+      ],
+      "qdrant_host": "https://your-qdrant-instance.example.com",
+      "qdrant_api_key": "your-qdrant-api-key-here", 
+      "qdrant_collection": "technical_documentation",
+      "openai_api_key": "sk-your-openai-api-key-here",
+      "embedding_model": "text-embedding-3-small",
+      "chunk_size": 2000,
+      "chunk_overlap": 200,
+      "include_subfolders": true,
+      "enable_image_analysis": true,
+      "image_analysis_model": "gpt-4o",
+      "enable_ocr": true,
+      "ocr_language": "eng",
+      "image_description_prompt": "Describe this image in detail, including any text, charts, diagrams, or important visual elements."
+    },
+    {
+      "name": "legal-docs",
+      "folders": ["your-google-drive-folder-id-here"],
+      "qdrant_host": "https://your-qdrant-instance.example.com",
+      "qdrant_api_key": "your-qdrant-api-key-here",
+      "qdrant_collection": "legal_documents",
+      "openai_api_key": "sk-your-openai-api-key-here",
+      "embedding_model": "text-embedding-3-small",
+      "chunk_size": 2000,
+      "chunk_overlap": 200,
+      "include_subfolders": true,
+      "enable_image_analysis": true,
+      "image_analysis_model": "gpt-4o",
+      "enable_ocr": true,
+      "ocr_language": "eng",
+      "image_description_prompt": "Describe this image in detail, including any text, charts, diagrams, or important visual elements."
+    }
+  ]
+}
