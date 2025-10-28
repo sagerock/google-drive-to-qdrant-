@@ -2,6 +2,9 @@
 
 Automatically synchronize Google Drive documents to your Qdrant vector databases weekly. This project supports both single-collection (legacy) and multi-collection configurations, enabling independent processing of different document sets to separate Qdrant collections. It maintains compatibility with your existing Flowise AI bot by preserving exact metadata structure and embedding format.
 
+## Common Usage
+python3 main.py awsna-accreditation
+
 ## Quick Test
 
 Once set up, test the connection:

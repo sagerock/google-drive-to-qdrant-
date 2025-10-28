@@ -189,6 +189,21 @@ class QdrantManager:
             logger.error(f"[{self.collection_display_name}] Error upserting chunks to Qdrant: {str(e)}")
             raise
     
+    def _sanitize_unicode(self, text: Any) -> Any:
+        """Remove invalid Unicode surrogate characters from text."""
+        if isinstance(text, str):
+            # Remove surrogate characters that can't be encoded to UTF-8
+            return text.encode('utf-8', errors='replace').decode('utf-8')
+        elif isinstance(text, dict):
+            # Recursively sanitize dictionary values
+            return {k: self._sanitize_unicode(v) for k, v in text.items()}
+        elif isinstance(text, list):
+            # Recursively sanitize list items
+            return [self._sanitize_unicode(item) for item in text]
+        else:
+            # Return other types as-is
+            return text
+    
     def _create_qdrant_point(self, chunk: Dict[str, Any]) -> models.PointStruct:
         """Convert a processed chunk into a Qdrant point."""
         try:
@@ -206,10 +221,14 @@ class QdrantManager:
                 logger.error(f"Invalid embedding dimension: {len(embedding)}")
                 return None
             
+            # Sanitize content and metadata to remove invalid Unicode characters
+            sanitized_content = self._sanitize_unicode(chunk.get('content', ''))
+            sanitized_metadata = self._sanitize_unicode(chunk.get('metadata', {}))
+            
             # Create the payload matching the exact structure from the example
             payload = {
-                'content': chunk.get('content', ''),
-                'metadata': chunk.get('metadata', {})
+                'content': sanitized_content,
+                'metadata': sanitized_metadata
             }
             
             # Create the Qdrant point
