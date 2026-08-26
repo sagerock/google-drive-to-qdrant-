@@ -170,3 +170,8 @@ All components implement a consistent error handling pattern:
 - **Validation Gates**: Input validation at each pipeline stage and collection level
 - **Resource Cleanup**: Proper cleanup on failures to prevent resource leaks
 - **Independent Processing**: Collection failures are isolated from each other
+## Retrieval tuning notes (2026-08-26)
+
+- Chunk size 2000/overlap 200 reproduces the original pipeline's chunk counts (accreditation ~644, renewal ~4,135). 1000 doubled them and pushed short slide-deck chunks down the ranking.
+- Zero-vector diagnostic: a filtered Qdrant search whose hits all score 0.000 means those points have empty vectors (batch embedding failed). The uploader now logs `ZERO-VECTOR chunks: N of M` and the heartbeat reports degraded.
+- The consuming bots' `qdrant_top_k` matters as much as the index: Accreditation bot 9f926ab8 runs 12 (claude-sonnet-5); duplicates from renamed source files (2025 vs 2026 copies) eat top-k slots until the old copies are removed from the sync folder.
