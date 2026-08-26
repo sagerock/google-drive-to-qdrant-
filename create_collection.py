@@ -58,7 +58,7 @@ def create_collection(collection_name=None):
     # Initialize Qdrant client using collection-specific config
     qdrant_url = collection_config.qdrant_host
     if qdrant_url.startswith('http://') or qdrant_url.startswith('https://'):
-        client = QdrantClient(url=qdrant_url, api_key=collection_config.qdrant_api_key)
+        client = QdrantClient(url=qdrant_url, api_key=collection_config.qdrant_api_key, port=None)
     else:
         client = QdrantClient(host=qdrant_url, api_key=collection_config.qdrant_api_key)
     

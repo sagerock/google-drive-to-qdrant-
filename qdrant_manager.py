@@ -36,9 +36,12 @@ class QdrantManager:
         # Handle both URL and host formats
         if qdrant_url.startswith('http://') or qdrant_url.startswith('https://'):
             # Use url parameter for full URLs
+            # port=None: use the port implied by the URL (443 for https). Without it
+            # qdrant-client appends :6333, which Railway-hosted Qdrant does not expose.
             self.client = QdrantClient(
                 url=qdrant_url,
                 api_key=api_key,
+                port=None,
                 timeout=60
             )
         else:
