@@ -27,6 +27,36 @@ def setup_logging():
         ]
     )
 
+
+def drop_superseded_duplicates(files, label):
+    """When a source file is renamed upstream, the nightly Drive mirror keeps both the old
+    and the new copy in the same folder (e.g. 'A. AWSNA Accreditation Guide .docx' from 2025
+    beside 'A. AWSNA Accreditation Guide.docx' from 2026). Ingesting both wastes retrieval
+    slots on stale text, so keep only the newest file per (folder, normalised name, type)."""
+    import re
+    def key(f):
+        m = f['metadata']; name = m.get('fileName', '').lower()
+        base, ext = (name.rsplit('.', 1) + [''])[:2] if '.' in name and len(name.rsplit('.', 1)[1]) <= 5 else (name, '')
+        if m.get('mimeType') == 'application/vnd.google-apps.document':
+            ext = 'docx'
+        base = re.sub(r'^[a-z]\.\s*', '', base)            # 'A. ' letter prefixes come and go
+        base = re.sub(r'\s*-\s*final.*$', '', base)         # '... - Final October 2025'
+        base = base.replace('reimburseable', 'reimbursable').replace('visting', 'visiting').replace('side deck', 'slide deck')
+        base = re.sub(r'[^a-z0-9]', '', base)
+        return (tuple(m.get('parents', [])), base, ext)
+    newest = {}
+    for f in files:
+        k = key(f)
+        if k not in newest or f['metadata'].get('modifiedTime', '') > newest[k]['metadata'].get('modifiedTime', ''):
+            newest[k] = f
+    kept = set(id(f) for f in newest.values())
+    dropped = [f for f in files if id(f) not in kept]
+    for f in dropped:
+        logger.info(f"[{label}] Skipping superseded duplicate: {f['metadata'].get('fileName')} ({f['metadata'].get('modifiedTime', '')[:10]})")
+    if dropped:
+        logger.warning(f"[{label}] Dropped {len(dropped)} superseded duplicate file(s); {len(files) - len(dropped)} remain")
+    return [f for f in files if id(f) in kept]
+
 def process_collection(collection_config, drive_handler):
     """Process a single collection configuration."""
     logger = logging.getLogger(__name__)
@@ -69,6 +99,8 @@ def process_collection(collection_config, drive_handler):
             all_processed_files.extend(processed_files)
             logger.info(f"[{collection_config.name}] Found {len(processed_files)} files in folder {folder_id}")
         
+        all_processed_files = drop_superseded_duplicates(all_processed_files, collection_config.name)
+
         if not all_processed_files:
             logger.warning(f"[{collection_config.name}] No files found in any configured folders")
             return {"success": False, "error": "No files found"}
