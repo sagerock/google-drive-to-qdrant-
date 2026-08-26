@@ -101,8 +101,22 @@ jobs:
           *.log
         retention-days: 30
     
-    - name: Notify on failure
-      if: failure()
+    - name: Cron Monitor heartbeat
+      if: always()
+      env:
+        CRON_MONITOR_URL: ${{ secrets.CRON_MONITOR_URL }}
+        CRON_MONITOR_TOKEN: ${{ secrets.CRON_MONITOR_TOKEN }}
+        JOB_STATUS: ${{ job.status }}
+        COLLECTION: ${{ inputs.collection }}
       run: |
-        echo "Upload failed! Check the logs artifact for details."
-        echo "::error::Weekly Qdrant upload failed. Check logs for details."
+        if [ -z "$CRON_MONITOR_URL" ] || [ -z "$CRON_MONITOR_TOKEN" ]; then
+          echo "Cron Monitor secrets not set; skipping heartbeat"; exit 0
+        fi
+        summary=$(grep -oE '✓ [a-z-]+: [0-9]+ docs, [0-9]+ chunks' uploader.log 2>/dev/null | tr '\n' ';' | sed 's/;$//')
+        if [ "$JOB_STATUS" = "success" ]; then
+          state=healthy; msg="Weekly Qdrant upload succeeded (${COLLECTION:-all collections}): ${summary:-see run log}"
+        else
+          state=failed; msg="Weekly Qdrant upload $JOB_STATUS (${COLLECTION:-all collections}); see GitHub Actions run $GITHUB_RUN_ID"
+        fi
+        STATE="$state" MSG="$msg" python3 -c 'import json,os; print(json.dumps({"status":os.environ["STATE"],"message":os.environ["MSG"]}))' > hb.json
+        curl -fsS --max-time 15 -X POST           -H "Authorization: Bearer $CRON_MONITOR_TOKEN" -H "Content-Type: application/json"           --data @hb.json "$CRON_MONITOR_URL/heartbeat/awsna-qdrant-upload"           || echo "WARNING: Cron Monitor heartbeat failed"
