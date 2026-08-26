@@ -112,7 +112,7 @@ jobs:
         if [ -z "$CRON_MONITOR_URL" ] || [ -z "$CRON_MONITOR_TOKEN" ]; then
           echo "Cron Monitor secrets not set; skipping heartbeat"; exit 0
         fi
-        summary=$(grep -oE '✓ [a-z-]+: [0-9]+ docs, [0-9]+ chunks' uploader.log 2>/dev/null | tr '\n' ';' | sed 's/;$//')
+        summary=$(grep -oE '✓ [a-z-]+: [0-9]+ docs, [0-9]+ chunks' uploader.log 2>/dev/null | sort -u | tr '\n' ';' | sed 's/;$//')
         if [ "$JOB_STATUS" = "success" ]; then
           state=healthy; msg="Weekly Qdrant upload succeeded (${COLLECTION:-all collections}): ${summary:-see run log}"
         else
