@@ -5,8 +5,13 @@ on:
   schedule:
     - cron: '0 2 * * 0'
   
-  # Allow manual triggering
+  # Allow manual triggering (optionally for a single collection)
   workflow_dispatch:
+    inputs:
+      collection:
+        description: 'Collection name to process (awsna-accreditation, awsna-renewal, sgws). Blank = all.'
+        required: false
+        default: ''
 
 jobs:
   upload:
@@ -77,7 +82,7 @@ jobs:
         
         echo "Running main.py..."
         set -e  # Exit on any error
-        python main.py 2>&1 | tee uploader.log
+        python main.py ${{ inputs.collection }} 2>&1 | tee uploader.log
         exit_code=${PIPESTATUS[0]}
         echo "Python exit code: $exit_code"
         

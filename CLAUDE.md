@@ -6,6 +6,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AWSNA Qdrant AutoUploader is a Python-based automation tool that synchronizes Google Drive documents to Qdrant vector databases. It supports both single-collection (legacy) and multi-collection configurations, enabling independent processing of different document sets to separate Qdrant collections. The tool maintains compatibility with existing Flowise AI bot implementations by preserving exact metadata structure and embedding format.
 
+## Live deployment facts (2026-08-26)
+
+- **Qdrant target is Railway `https://qdrant-production-3533.up.railway.app`** ("Qdrant General").
+  The original Qdrant Cloud cluster (`286c6e88…cloud.qdrant.io`) and the interim Railway `108c`
+  instance are both deleted. Key = `QDRANT_API_KEY` in `/mnt/d/dev/law-tutor/.env`.
+- Runtime config lives ONLY in the GitHub secret `COLLECTIONS_CONFIG` (3 collections:
+  `awsna-accreditation` → `awsna_accreditation_auto`, `awsna-renewal` → `awsna_renewal_auto`,
+  `sgws` → `sgws_auto`; all `text-embedding-3-small`, 1536-dim). The Drive service-account key
+  is only the `GOOGLE_DRIVE_CREDENTIALS` secret. Regenerate/re-set with `gh secret set`.
+- Source folders are Sage-owned copies filled nightly by an Apps Script running as
+  `ai-bot@awsna.org` ("AWSNA Google Drive Sync", `1QGd-Zx20h_T2E_JL6oFIDQa2hELBON5D`).
+- GitHub disables the Sunday cron after 60 days without commits (`disabled_inactivity`); it
+  stopped 2025-10-05 and was re-enabled 2026-08-26. Manual run:
+  `gh workflow run weekly-upload.yml -f collection=awsna-accreditation` (blank = all three).
+- Consumers: Flowise "AWSNA Accreditation Bot" (embedded on community.awsna.org) and the Bot Builder
+  twin at aibots.sagerock.com (bot `9f926ab8`). Both read the same collection.
+
 ## Development Commands
 
 **Note: This user prefers `python3` and `pip3` commands explicitly**
