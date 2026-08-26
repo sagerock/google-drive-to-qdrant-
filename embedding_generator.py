@@ -33,6 +33,14 @@ class EmbeddingGenerator:
         self.max_retries = 3
         self.retry_delay = 1
     
+    @staticmethod
+    def _clean(text: str) -> str:
+        """Normalise text for the embeddings API: collapse newlines and drop lone
+        surrogates (PDF extraction junk such as '\udfc1'), which make the OpenAI
+        client raise 'surrogates not allowed' for the entire batch."""
+        text = text.replace('\n', ' ').strip()
+        return text.encode('utf-8', 'ignore').decode('utf-8')
+
     def generate_embedding(self, text: str) -> List[float]:
         """
         Generate a single embedding for the given text.
@@ -41,7 +49,7 @@ class EmbeddingGenerator:
         for attempt in range(self.max_retries):
             try:
                 # Clean the text
-                text = text.replace('\n', ' ').strip()
+                text = self._clean(text)
                 
                 if not text:
                     logger.warning(f"[{self.collection_name}] Empty text provided for embedding")
@@ -83,7 +91,7 @@ class EmbeddingGenerator:
             for attempt in range(self.max_retries):
                 try:
                     # Clean the texts
-                    cleaned_batch = [text.replace('\n', ' ').strip() for text in batch]
+                    cleaned_batch = [self._clean(text) for text in batch]
                     
                     # Filter out empty texts but keep track of their positions
                     valid_texts = []
@@ -127,10 +135,17 @@ class EmbeddingGenerator:
                     if attempt < self.max_retries - 1:
                         time.sleep(self.retry_delay * (attempt + 1))
                     else:
-                        logger.error(f"[{self.collection_name}] Failed to generate batch embeddings after {self.max_retries} attempts")
-                        # Add zero vectors for this failed batch
-                        embeddings.extend([[0.0] * 1536] * len(batch))
+                        logger.error(f"[{self.collection_name}] Failed to generate batch embeddings after {self.max_retries} attempts; falling back to one-by-one for this batch")
+                        for text in batch:
+                            try:
+                                embeddings.append(self.generate_embedding(text))
+                            except Exception as item_error:
+                                logger.error(f"[{self.collection_name}] Chunk could not be embedded even alone ({item_error}); storing a zero vector")
+                                embeddings.append([0.0] * 1536)
         
+        zero_count = sum(1 for e in embeddings if not any(e))
+        if zero_count:
+            logger.warning(f"[{self.collection_name}] ZERO-VECTOR chunks: {zero_count} of {len(embeddings)} could not be embedded and will never be retrievable")
         logger.info(f"[{self.collection_name}] Generated {len(embeddings)} embeddings total")
         return embeddings
     

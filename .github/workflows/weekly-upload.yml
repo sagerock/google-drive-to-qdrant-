@@ -113,7 +113,10 @@ jobs:
           echo "Cron Monitor secrets not set; skipping heartbeat"; exit 0
         fi
         summary=$(grep -oE '✓ [a-z-]+: [0-9]+ docs, [0-9]+ chunks' uploader.log 2>/dev/null | sort -u | tr '\n' ';' | sed 's/;$//')
-        if [ "$JOB_STATUS" = "success" ]; then
+        zero=$(grep -oE 'ZERO-VECTOR chunks: [0-9]+ of [0-9]+' uploader.log 2>/dev/null | sort -u | tr '\n' ';' | sed 's/;$//')
+        if [ "$JOB_STATUS" = "success" ] && [ -n "$zero" ]; then
+          state=degraded; msg="Weekly Qdrant upload finished but some chunks have no embedding ($zero) (${COLLECTION:-all collections}): ${summary:-see run log}"
+        elif [ "$JOB_STATUS" = "success" ]; then
           state=healthy; msg="Weekly Qdrant upload succeeded (${COLLECTION:-all collections}): ${summary:-see run log}"
         else
           state=failed; msg="Weekly Qdrant upload $JOB_STATUS (${COLLECTION:-all collections}); see GitHub Actions run $GITHUB_RUN_ID"
