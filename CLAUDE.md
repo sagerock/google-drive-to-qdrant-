@@ -13,7 +13,7 @@ AWSNA Qdrant AutoUploader is a Python-based automation tool that synchronizes Go
   instance are both deleted. Key = `QDRANT_API_KEY` in `/mnt/d/dev/law-tutor/.env`.
 - Runtime config lives ONLY in the GitHub secret `COLLECTIONS_CONFIG` (3 collections:
   `awsna-accreditation` → `awsna_accreditation_auto`, `awsna-renewal` → `awsna_renewal_auto`,
-  `sgws` → `sgws_auto`; all `text-embedding-3-small`, 1536-dim). The Drive service-account key
+  `sgws` → `sgws_auto`; all `text-embedding-3-small`, 1536-dim, chunk_size 2000 / overlap 200 since 2026-08-26). The Drive service-account key
   is only the `GOOGLE_DRIVE_CREDENTIALS` secret. Regenerate/re-set with `gh secret set`.
 - Source folders are Sage-owned copies filled nightly by an Apps Script running as
   `ai-bot@awsna.org` ("AWSNA Google Drive Sync", `1QGd-Zx20h_T2E_JL6oFIDQa2hELBON5D`).
