@@ -34,6 +34,8 @@ def drop_superseded_duplicates(files, label):
     beside 'A. AWSNA Accreditation Guide.docx' from 2026). Ingesting both wastes retrieval
     slots on stale text, so keep only the newest file per (folder, normalised name, type)."""
     import re
+    import logging
+    logger = logging.getLogger(__name__)
     def key(f):
         m = f['metadata']; name = m.get('fileName', '').lower()
         base, ext = (name.rsplit('.', 1) + [''])[:2] if '.' in name and len(name.rsplit('.', 1)[1]) <= 5 else (name, '')
