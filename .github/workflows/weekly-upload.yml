@@ -90,6 +90,10 @@ jobs:
           echo "ERROR: Python script failed with exit code $exit_code"
           exit $exit_code
         fi
+      env:
+        # Overrides the per-collection openai_api_key inside COLLECTIONS_CONFIG when set, so a key
+        # rotation is one `gh secret set OPENAI_API_KEY` (vault item op://Jax/OPENAI_API_KEY).
+        OPENAI_API_KEY_OVERRIDE: ${{ secrets.OPENAI_API_KEY }}
     
     - name: Upload logs on failure
       if: failure()

@@ -15,6 +15,13 @@ AWSNA Qdrant AutoUploader is a Python-based automation tool that synchronizes Go
   `awsna-accreditation` → `awsna_accreditation_auto`, `awsna-renewal` → `awsna_renewal_auto`,
   `sgws` → `sgws_auto`; all `text-embedding-3-small`, 1536-dim, chunk_size 2000 / overlap 200 since 2026-08-26). The Drive service-account key
   is only the `GOOGLE_DRIVE_CREDENTIALS` secret. Regenerate/re-set with `gh secret set`.
+- **OpenAI key = GitHub secret `OPENAI_API_KEY`** (copied from vault `op://Jax/OPENAI_API_KEY`), which
+  overrides the `openai_api_key` still embedded in `COLLECTIONS_CONFIG` (that one was revoked in the
+  2026-10-23 Railway-breach rotation and the 10-25 run got 401 on every chunk). Rotate with
+  `op read op://Jax/OPENAI_API_KEY/credential | gh secret set OPENAI_API_KEY`.
+- **Qdrant General had no volume until 2026-10-25**, so the 10-23 redeploy wiped every collection.
+  A volume now sits at `/qdrant/storage`. If the run says `Collection '<x>_auto' does not exist`,
+  recreate it (unnamed vector, 1536, Cosine, `create_collection.py`) and rerun; it rebuilds from Drive.
 - Source folders are Sage-owned copies filled nightly by an Apps Script running as
   `ai-bot@awsna.org` ("AWSNA Google Drive Sync", `1QGd-Zx20h_T2E_JL6oFIDQa2hELBON5D`).
 - GitHub disables the Sunday cron after 60 days without commits (`disabled_inactivity`); it

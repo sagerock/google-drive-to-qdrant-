@@ -77,7 +77,7 @@ class MultiCollectionConfig:
                     qdrant_host=collection_data.get('qdrant_host', os.getenv('QDRANT_HOST')),
                     qdrant_api_key=collection_data.get('qdrant_api_key', os.getenv('QDRANT_API_KEY')),
                     qdrant_collection=collection_data['qdrant_collection'],
-                    openai_api_key=collection_data.get('openai_api_key', os.getenv('OPENAI_API_KEY')),
+                    openai_api_key=os.getenv('OPENAI_API_KEY_OVERRIDE') or collection_data.get('openai_api_key', os.getenv('OPENAI_API_KEY')),
                     embedding_model=collection_data.get('embedding_model', 'text-embedding-ada-002'),
                     chunk_size=collection_data.get('chunk_size', 1000),
                     chunk_overlap=collection_data.get('chunk_overlap', 200),
