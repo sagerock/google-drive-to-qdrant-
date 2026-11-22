@@ -116,7 +116,7 @@ jobs:
         if [ -z "$CRON_MONITOR_URL" ] || [ -z "$CRON_MONITOR_TOKEN" ]; then
           echo "Cron Monitor secrets not set; skipping heartbeat"; exit 0
         fi
-        summary=$(grep -oE '✓ [a-z-]+: [0-9]+ docs, [0-9]+ chunks' uploader.log 2>/dev/null | sort -u | tr '\n' ';' | sed 's/;$//')
+        summary=$(grep -oE '✓ [a-z-]+: [0-9]+ docs, [0-9]+ chunks|newest edit [0-9-]+|newest edit unknown' uploader.log 2>/dev/null | paste -sd' ' | sed 's/ ✓/\n✓/g; s/ newest edit/, newest edit/g' | sort -u | tr '\n' ';' | sed 's/;$//')
         zero=$(grep -oE 'ZERO-VECTOR chunks: [0-9]+ of [0-9]+' uploader.log 2>/dev/null | sort -u | tr '\n' ';' | sed 's/;$//')
         if [ "$JOB_STATUS" = "success" ] && [ -n "$zero" ]; then
           state=degraded; msg="Weekly Qdrant upload finished but some chunks have no embedding ($zero) (${COLLECTION:-all collections}): ${summary:-see run log}"

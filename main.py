@@ -177,6 +177,9 @@ def process_collection(collection_config, drive_handler):
             "documents_processed": len(documents),
             "chunks_created": len(all_chunks),
             "points_upserted": final_stats.get('points_count', 0),
+            # Newest Drive edit in this collection: the counts can sit still for months
+            # when nobody edits the source, so this date is what shows the copy is live.
+            "newest_modified": max((f['metadata'].get('modifiedTime', '') for f in all_processed_files), default='')[:10] or 'unknown',
             "processing_time": collection_time
         }
         
@@ -258,7 +261,8 @@ def main(target_collection=None):
         for result in results:
             if result["success"]:
                 logger.info(f"✓ {result['collection_name']}: {result['documents_processed']} docs, "
-                           f"{result['chunks_created']} chunks, {result['points_upserted']} points")
+                           f"{result['chunks_created']} chunks, {result['points_upserted']} points, "
+                           f"newest edit {result.get('newest_modified', 'unknown')}")
             else:
                 logger.error(f"✗ {result['collection_name']}: {result['error']}")
         
