@@ -182,3 +182,18 @@ All components implement a consistent error handling pattern:
 - Chunk size 2000/overlap 200 reproduces the original pipeline's chunk counts (accreditation ~644, renewal ~4,135). 1000 doubled them and pushed short slide-deck chunks down the ranking.
 - Zero-vector diagnostic: a filtered Qdrant search whose hits all score 0.000 means those points have empty vectors (batch embedding failed). The uploader now logs `ZERO-VECTOR chunks: N of M` and the heartbeat reports degraded.
 - The consuming bots' `qdrant_top_k` matters as much as the index: Accreditation bot 9f926ab8 runs 12 (claude-sonnet-5); duplicates from renamed source files (2025 vs 2026 copies) eat top-k slots until the old copies are removed from the sync folder.
+
+## Renewal source = AWSNA's shared drive (2026-11-25)
+
+- The Renewal collection's real source is AWSNA's shared drive **"RENEWAL & Blog Archive"** (`0AN7KOnHN4gJTUk9PVA`),
+  kept by Pam (membertracking@awsna.org). Our "RENEWAL & Blog Archive" folder in the sync folder was a ONE-TIME copy
+  (2025-08-11) that nothing refreshed, so Fall 2025 and Spring 2026 were missing until Beverly Amico flagged it.
+  On 2026-11-25 Jax copied both issues in by hand (sage@ token) and rebuilt: 803 docs / 4,259 points, verified by search.
+- Direct connect is ready in code (commit 3414056: shared-drive support, repo variables `FOLDERS_OVERRIDE` and
+  `SKIP_SUBFOLDER_PREFIXES`, the latter set to `Complete ` so the full-issue PDF folders are skipped). Remaining step:
+  an AWSNA manager of that shared drive adds `python-awsna-google-drive-qdra@sapient-magnet-467418-e1.iam.gserviceaccount.com`
+  as Viewer (sage@ is only a viewer, can't share). Then:
+  `gh variable set FOLDERS_OVERRIDE --body '{"awsna-renewal":["0AN7KOnHN4gJTUk9PVA"]}'` and
+  `gh workflow run weekly-upload.yml -f collection=awsna-renewal`; expect ~803 docs. Zero files found = no access yet
+  (the run stops before clearing, so the collection is safe). Blog folder `z_Essentials in Education Blog` is in the drive too.
+- Until then, a new issue must be copied into our folder by hand.
