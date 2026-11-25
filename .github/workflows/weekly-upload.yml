@@ -94,6 +94,10 @@ jobs:
         # Overrides the per-collection openai_api_key inside COLLECTIONS_CONFIG when set, so a key
         # rotation is one `gh secret set OPENAI_API_KEY` (vault item op://Jax/OPENAI_API_KEY).
         OPENAI_API_KEY_OVERRIDE: ${{ secrets.OPENAI_API_KEY }}
+        # Repo variables (not secrets; folder ids only). FOLDERS_OVERRIDE swaps a collection's source
+        # folders; SKIP_SUBFOLDER_PREFIXES skips e.g. full-issue "Complete ..." folders. See AGENTS.md.
+        FOLDERS_OVERRIDE: ${{ vars.FOLDERS_OVERRIDE }}
+        SKIP_SUBFOLDER_PREFIXES: ${{ vars.SKIP_SUBFOLDER_PREFIXES }}
     
     - name: Upload logs on failure
       if: failure()

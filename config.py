@@ -91,6 +91,17 @@ class MultiCollectionConfig:
                         'Describe this image in detail, including any text, charts, diagrams, or important visual elements.')
                 )
                 self.collections.append(collection)
+
+            # FOLDERS_OVERRIDE (GitHub variable, JSON {"<collection name>": ["<folder or shared drive id>", ...]})
+            # swaps a collection's source folders without rewriting the COLLECTIONS_CONFIG secret.
+            # Added 2026-11-25 to read AWSNA's Renewal shared drive directly instead of a one-time copy.
+            override_raw = os.getenv('FOLDERS_OVERRIDE', '').strip()
+            if override_raw:
+                overrides = json.loads(override_raw)
+                for collection in self.collections:
+                    if overrides.get(collection.name):
+                        logger.info(f"FOLDERS_OVERRIDE: {collection.name} now reads {overrides[collection.name]}")
+                        collection.folders = list(overrides[collection.name])
                 
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in COLLECTIONS_CONFIG: {e}")

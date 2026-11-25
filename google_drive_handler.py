@@ -1,3 +1,4 @@
+import os
 import io
 import logging
 from typing import List, Dict, Any, Optional
@@ -44,7 +45,9 @@ class GoogleDriveHandler:
             results = self.service.files().list(
                 q=query,
                 fields="files(id,name,mimeType,size,createdTime,modifiedTime,parents,webViewLink)",
-                pageSize=1000
+                pageSize=1000,
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True
             ).execute()
             
             files = results.get('files', [])
@@ -125,15 +128,21 @@ class GoogleDriveHandler:
             results = self.service.files().list(
                 q=query,
                 fields="files(id,name)",
-                pageSize=1000
+                pageSize=1000,
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True
             ).execute()
             
             subfolders = results.get('files', [])
             logger.info(f"Found {len(subfolders)} subfolders in {folder_id}")
             
             # Recursively get subfolders of each subfolder
+            skip_prefixes = [p.strip().lower() for p in os.getenv('SKIP_SUBFOLDER_PREFIXES', '').split(',') if p.strip()]
             for subfolder in subfolders:
                 subfolder_id = subfolder['id']
+                if any(subfolder['name'].lower().startswith(p) for p in skip_prefixes):
+                    logger.info(f"Skipping subfolder by SKIP_SUBFOLDER_PREFIXES: {subfolder['name']}")
+                    continue
                 logger.info(f"Found subfolder: {subfolder['name']} ({subfolder_id})")
                 
                 # Recursively get subfolders
@@ -165,7 +174,7 @@ class GoogleDriveHandler:
             # Get folder names for better tracking
             for fid in all_folder_ids:
                 try:
-                    folder_info = self.service.files().get(fileId=fid, fields="name,parents").execute()
+                    folder_info = self.service.files().get(fileId=fid, fields="name,parents", supportsAllDrives=True).execute()
                     folder_paths[fid] = folder_info.get('name', 'Unknown Folder')
                 except:
                     folder_paths[fid] = 'Unknown Folder'
@@ -266,7 +275,7 @@ class GoogleDriveHandler:
                 )
             else:
                 # Other files - download directly
-                request = self.service.files().get_media(fileId=file_id)
+                request = self.service.files().get_media(fileId=file_id, supportsAllDrives=True)
             
             # Download the content
             file_io = io.BytesIO()
