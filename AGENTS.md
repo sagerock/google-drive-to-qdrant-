@@ -199,3 +199,12 @@ All components implement a consistent error handling pattern:
 - **Connected 2026-11-25 (evening):** Pam added the service account as Viewer; `FOLDERS_OVERRIDE` set; first direct run
   read 804 docs / 4,263 points from the shared drive, no zero vectors. New issues Pam uploads reach the bot on the
   Sunday run. Our old copy folder is no longer read for Renewal; hand copies are not needed.
+
+## Accreditation direct connect (asked 2026-11-25)
+
+- Accreditation still reads Sage's "Accreditation - Sync From Here" folder (Hub Accreditation Process, School Workspace,
+  Team Workspace, Institute), filled nightly by the ai-bot@awsna.org Apps Script (newest copy 2026-08-28, so it runs).
+- Jax asked Siân (accreditation@awsna.org, Sage copied) to add the service account as Viewer on the AWSNA source.
+  When she does: find the source folder/drive id, add `"awsna-accreditation":[...]` to `FOLDERS_OVERRIDE` (keep the
+  renewal entry), run `gh workflow run weekly-upload.yml -f collection=awsna-accreditation`, and expect roughly the
+  same document count as the copy before trusting it.
