@@ -16,6 +16,9 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write   # keepalive step re-enables this workflow
     
     steps:
     - name: Checkout repository
@@ -131,3 +134,14 @@ jobs:
         fi
         STATE="$state" MSG="$msg" python3 -c 'import json,os; print(json.dumps({"status":os.environ["STATE"],"message":os.environ["MSG"]}))' > hb.json
         curl -fsS --max-time 15 -X POST           -H "Authorization: Bearer $CRON_MONITOR_TOKEN" -H "Content-Type: application/json"           --data @hb.json "$CRON_MONITOR_URL/heartbeat/awsna-qdrant-upload"           || echo "WARNING: Cron Monitor heartbeat failed"
+
+    - name: Keep the schedule alive
+      # GitHub turns off a scheduled workflow after 60 days with no commits (it died this way 2025-10-05).
+      # Re-enabling it through the API each week resets that clock without a commit.
+      if: always()
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        curl -fsS -X PUT -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/workflows/weekly-upload.yml/enable" \
+          && echo "workflow re-enabled (keepalive)" || echo "WARNING: keepalive call failed"
