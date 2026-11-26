@@ -196,4 +196,6 @@ All components implement a consistent error handling pattern:
   `gh variable set FOLDERS_OVERRIDE --body '{"awsna-renewal":["0AN7KOnHN4gJTUk9PVA"]}'` and
   `gh workflow run weekly-upload.yml -f collection=awsna-renewal`; expect ~803 docs. Zero files found = no access yet
   (the run stops before clearing, so the collection is safe). Blog folder `z_Essentials in Education Blog` is in the drive too.
-- Until then, a new issue must be copied into our folder by hand.
+- **Connected 2026-11-25 (evening):** Pam added the service account as Viewer; `FOLDERS_OVERRIDE` set; first direct run
+  read 804 docs / 4,263 points from the shared drive, no zero vectors. New issues Pam uploads reach the bot on the
+  Sunday run. Our old copy folder is no longer read for Renewal; hand copies are not needed.
